@@ -11,7 +11,7 @@ broker="52.187.109.154"
 
 mqtt.Client.connected_flag=False #create flag in class
 clients = {}
-out_queue  = {} 
+out_queue  = {}
 
 def on_log(client, userdata, level, buf):
    print(buf)
@@ -74,15 +74,14 @@ def check_user_gesture(username, topic):
     out_queue["Light"] = []
     res = False
     if out_queue.get("Light") in gesture.values():
-        clients[username].publish("Topic/LightD", "{'device_id': 'Light', 'values': ['255']}")
+        clients[username].publish("Topic/LightD", """[{"device_id": "Light", "values": ["255"]}]""")
         res = True
     else:
-        clients[username].publish("Topic/LightD", "{'device_id': 'Light', 'values': ['127']}")
+        clients[username].publish("Topic/LightD", """[{"device_id": "Light", "values": ["127"]}]""")
         res = False
     clients[username].disconnect()
     clients[username].loop_stop()
-    print(res)
-    return res
+    return [res]
 
 def create_gesture(username, topic, gesture_name):
     Create_connections(username)
@@ -95,7 +94,7 @@ def create_gesture(username, topic, gesture_name):
     gesture[gesture_name] = out_queue.get("Light") 
     out_queue["Light"] = []
 
-    return gesture
+    return list(gesture.keys())
 
 def update_gesture(username, topic, gesture_name):
     Create_connections(username)
@@ -107,15 +106,15 @@ def update_gesture(username, topic, gesture_name):
     out_queue["Light"] = []
     
 
-    return gesture
+    return list(gesture.keys())
 
 def delete_gesture(username, topic, gesture_name):
     gesture.pop(gesture_name)
 
-    return gesture
+    return list(gesture.keys())
 
 def get_gesture():
-    return gesture
+    return list(gesture.keys())
 ########################################################################################
 
 
@@ -125,7 +124,7 @@ app.config["JSON_SORT_KEYS"] = False
 import time
 
 
-@app.route('/multi/check', methods = ['POST'])
+@app.route('/multi/check', methods = ['GET'])
 def api_check():
     time.sleep(2)
     result = check_user_gesture("Client1", "Topic/Light")
@@ -146,10 +145,12 @@ def api_gesture():
     elif option == 'd':
         #delete gesture
         return jsonify(delete_gesture("Client1", "Topic/Light", gesture_name))
-    elif option == 'g':
-        return jsonify(get_gesture())
     else:
         return jsonify(api_err_400())
+
+@app.route('/multi/get', methods = ['GET'])
+def api_gesture_get():
+    return jsonify(get_gesture())
 
 @app.errorhandler(400)
 def api_err_400():
