@@ -8,6 +8,7 @@ from flask import request, jsonify
 
 broker="52.187.109.154"
 # broker = "13.76.250.158"
+broker="52.187.125.59"
 
 mqtt.Client.connected_flag=False #create flag in class
 clients = {}
@@ -45,6 +46,7 @@ def on_publish(client, userdata, mid):
 
 def Create_connections(username):
    client = mqtt.Client(username)
+   client.username_pw_set("BKvm","Hcmut_CSE_2020")
    client.connect(broker)           #establish connection
    print("connecting to broker", broker)
       #client.on_log=on_log #this gives getailed logging
@@ -77,7 +79,7 @@ def check_user_gesture(username, topic):
         clients[username].publish("Topic/LightD", """[{"device_id": "Light", "values": ["255"]}]""")
         res = True
     else:
-        clients[username].publish("Topic/LightD", """[{"device_id": "Light", "values": ["127"]}]""")
+        clients[username].publish("Topic/LightD", """[{"device_id": "Light", "values": ["0","0"]}]""")
         res = False
     clients[username].disconnect()
     clients[username].loop_stop()
@@ -86,6 +88,7 @@ def check_user_gesture(username, topic):
 def create_gesture(username, topic, gesture_name):
     Create_connections(username)
     clients[username].subscribe(topic)
+    clients[username].publish("Topic/LightD", """[{"device_id": "Light", "values": ["0", "0"]}]""")
     time.sleep(5)
     print(out_queue)
     clients[username].disconnect()
@@ -99,6 +102,7 @@ def create_gesture(username, topic, gesture_name):
 def update_gesture(username, topic, gesture_name):
     Create_connections(username)
     clients[username].subscribe(topic)
+    clients[username].publish("Topic/LightD", """[{"device_id": "Light", "values": ["255", "255"]}]""")
     time.sleep(5)
     clients[username].disconnect()
     clients[username].loop_stop()
