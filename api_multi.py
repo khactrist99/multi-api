@@ -22,7 +22,7 @@ def on_message(client, userdata, message):
    data = str(message.payload.decode("utf-8"))
    # print(json(msg))
    msg = json.loads(data)
-   print(msg)
+   print("message:", msg)
    if out_queue.get(msg["device_id"]):
       out_queue[msg["device_id"]] += msg["values"]
    else:
