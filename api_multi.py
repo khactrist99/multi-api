@@ -197,9 +197,34 @@ def api_setting():
         password = data.get('password')
     
     if data.get('wait_time'):
-        wait_time = data.get('wait_time')
+        wait_time = int(data.get('wait_time'))
     print(wait_time)
     return 'OK'
+
+@app.route('/multi/light', methods=['POST'])
+def control_light():
+    data = request.form
+    option = data.get('op')
+
+    username = 'control'
+    Create_connections(username)
+    clients[username].subscribe("LightD")
+
+    res = ''
+    # inputData = out_queue.get("Light")
+    
+    if option == 'on':
+        clients[username].publish(
+            "Topic/LightD", """[{"device_id": "Light", "values": ["0","0"]}]""")
+        res =  'turn on light'
+    elif option == 'off':
+        clients[username].publish(
+            "Topic/LightD", """[{"device_id": "Light", "values": ["1","255"]}]""")
+        res = 'turn off light'
+    
+    clients[username].disconnect()
+    clients[username].loop_stop()
+    return res
 
 @app.errorhandler(400)
 def api_err_400():
